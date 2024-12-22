@@ -1,11 +1,12 @@
 package nl.zwanepol.csp.controller;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.annotation.Resource;
-import jakarta.xml.bind.JAXBException;
+import lombok.extern.slf4j.Slf4j;
+
+import nl.zwanepol.csp.exception.FileProcessingException;
 import nl.zwanepol.csp.model.CustomerStatement;
 import nl.zwanepol.csp.service.CsvService;
 import nl.zwanepol.csp.service.StatementService;
@@ -17,8 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.opencsv.exceptions.CsvException;
-
+@Slf4j
 @RestController
 @RequestMapping("api/clientStatements")
 public class StatementProcessor {
@@ -29,30 +29,25 @@ public class StatementProcessor {
     private CsvService csvService;
     @Resource
     private XmlService xmlService;
-    private final List<CustomerStatement> statements = new ArrayList<>();
-    private final List<CustomerStatement> failedStatements = new ArrayList<>();
 
     @PostMapping("/process")
     public String processStatement(@RequestParam("file") MultipartFile file) {
-        List<CustomerStatement> records = parseFile(file);
-        service.processStatements(records);
+        List<CustomerStatement> statements = parseFile(file);
+        List<CustomerStatement> failedStatements = service.processStatements(statements);
         return generateReport(failedStatements);
     }
 
     private List<CustomerStatement> parseFile(MultipartFile file) {
-
+        List<CustomerStatement> statements = new ArrayList<>();
         try {
-            if (file.getOriginalFilename().endsWith(".csv")) {
-                csvService.parseCsv(file.getInputStream(), statements, failedStatements);
-            } else if (file.getOriginalFilename().endsWith(".xml")) {
-                xmlService.parseXml(file.getInputStream(), statements, failedStatements);
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename != null && originalFilename.endsWith(".csv")) {
+                csvService.parseCsv(file.getInputStream(), statements);
+            } else if (originalFilename != null && originalFilename.endsWith(".xml")) {
+                xmlService.parseXml(file.getInputStream(), statements);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (CsvException e) {
-            throw new RuntimeException(e);
-        } catch (JAXBException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new FileProcessingException("Error processing file", e);
         }
         return statements;
     }

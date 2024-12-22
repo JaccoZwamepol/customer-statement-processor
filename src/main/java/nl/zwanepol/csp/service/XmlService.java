@@ -5,20 +5,23 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Unmarshaller;
 
 import jakarta.xml.bind.JAXBException;
+import lombok.extern.slf4j.Slf4j;
+
 import nl.zwanepol.csp.model.CustomerStatement;
-import nl.zwanepol.csp.model.CustomerStatements;
+import nl.zwanepol.csp.model.Records;
 
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class XmlService {
     public void parseXml(InputStream input,
-                         List<CustomerStatement> statements,
-                         List<CustomerStatement> duplicateReferences)
+                         List<CustomerStatement> statements)
             throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(CustomerStatements.class);
+        log.info("Parsing XML file");
+        JAXBContext context = JAXBContext.newInstance(Records.class);
         Unmarshaller unmarshaller = context.createUnmarshaller();
-        CustomerStatements customerStatements = (CustomerStatements) unmarshaller.unmarshal(input);
-        statements.addAll(customerStatements.getStatements());
+        Records customerStatements = (Records) unmarshaller.unmarshal(input);
+        statements.addAll(customerStatements.getCustomerStatements());
     }
 }
