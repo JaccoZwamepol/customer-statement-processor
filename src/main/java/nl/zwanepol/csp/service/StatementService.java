@@ -1,18 +1,22 @@
-package zwanepol.jacco.csp.service;
+package nl.zwanepol.csp.service;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import zwanepol.jacco.csp.model.CustomerStatement;
-import zwanepol.jacco.csp.repository.StatementRepository;
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 
+import nl.zwanepol.csp.model.CustomerStatement;
+import nl.zwanepol.csp.repository.StatementRepository;
+
+@Slf4j
 @Service
-public class SatementService {
+public class StatementService {
+    @Resource
     private StatementRepository repository;
 
-    @Autowired
+
     public void processStatements(List<CustomerStatement> statements) {
         for (CustomerStatement statement : statements) {
             if (isValid(statement)) {
@@ -22,12 +26,12 @@ public class SatementService {
     }
 
     private boolean isValid(CustomerStatement statement) {
-        return repository.findByReference(statement.getReference()).isEmpty()
-                && statement.getEndBalance().equals(calculateEndBalance(statement));
+        log.info("validating statement: {}, {}", statement.getEndBalance(), calculateEndBalance(statement));
+        return statement.getEndBalance().equals(calculateEndBalance(statement));
     }
 
     private BigDecimal calculateEndBalance(CustomerStatement statement) {
-        return statement.getStartBalance().add(statement.getMutation()).multiply(statement.getEndBalance());
+        return statement.getStartBalance().add(statement.getMutation());
     }
 }
 

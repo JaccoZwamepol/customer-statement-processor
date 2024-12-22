@@ -1,3 +1,8 @@
+logging:
+  level:
+    nl: TRACE
+    org: INFO
+
 spring:
   datasource:
     url: jdbc:h2:mem:customerdb
@@ -7,3 +12,7 @@ spring:
   h2:
     console:
       enabled: true
+  flyway:
+    locations: classpath:sql
+    baselineOnMigrate: true
+    enabled: true

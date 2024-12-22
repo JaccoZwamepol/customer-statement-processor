@@ -1,4 +1,4 @@
-package zwanepol.jacco.csp.repository;
+package nl.zwanepol.csp.repository;
 
 import java.util.Optional;
 
@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import jakarta.annotation.Resource;
-import zwanepol.jacco.csp.model.CustomerStatement;
+import nl.zwanepol.csp.model.CustomerStatement;
 
 @Repository
 public class StatementRepository {
@@ -15,18 +15,18 @@ public class StatementRepository {
     public Optional<CustomerStatement> findByReference(long reference) {
         return Optional.ofNullable(jdbcTemplate.queryForObject("SELECT * FROM statement_records WHERE reference = ?",
                 (rs, rowNum) -> new CustomerStatement(
-                        rs.getLong("reference"),
-                        rs.getString("accountNumber"),
-                        rs.getString("description"),
-                        rs.getBigDecimal("startBalance"),
-                        rs.getBigDecimal("mutation"),
-                        rs.getBigDecimal("endBalance")
+                        rs.getLong("REFERENCE"),
+                        rs.getString("ACCOUNT_NUMBER"),
+                        rs.getString("DESCRIPTION"),
+                        rs.getBigDecimal("START_BALANCE"),
+                        rs.getBigDecimal("MUTATION"),
+                        rs.getBigDecimal("END_BALANCE")
                 ), reference));
     }
 
     public void save(CustomerStatement statement) {
         jdbcTemplate.update("INSERT INTO statement_records "
-                        + "(reference, accountNumber, description, startBalance, mutation, endBalance) "
+                        + "(REFERENCE, ACCOUNT_NUMBER, DESCRIPTION, START_BALANCE, MUTATION, END_BALANCE) "
                         + "VALUES (?, ?, ?, ?, ?, ?)",
                 statement.getReference(),
                 statement.getAccountNumber(),
